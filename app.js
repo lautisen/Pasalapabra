@@ -1,4 +1,4 @@
-const SPREADSHEET_URL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://docs.google.com/spreadsheets/d/e/2PACX-1vTwNPNMY-W9MhaO0M_mr5XN5sHbDn6vROm6kEjDk23q0hhSXmR5oOaDu9Byz6fv-VATaQ207ScuUede/pub?gid=0&single=true&output=csv');
+const SPREADSHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTwNPNMY-W9MhaO0M_mr5XN5sHbDn6vROm6kEjDk23q0hhSXmR5oOaDu9Byz6fv-VATaQ207ScuUede/pub?gid=0&single=true&output=csv';
 
 // Global State
 let wordsData = [];
@@ -55,42 +55,37 @@ async function init() {
 // --- Data Fetching ---
 
 function fetchWordsData() {
-    return fetch(SPREADSHEET_URL)
-        .then(response => {
-            if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
-            return response.text();
-        })
-        .then(csvText => {
-            return new Promise((resolve, reject) => {
-                Papa.parse(csvText, {
-                    header: true,
-                    complete: function (results) {
-                        const data = results.data.filter(row => Object.keys(row).length > 1);
+    return new Promise((resolve, reject) => {
+        Papa.parse(SPREADSHEET_URL, {
+            download: true,
+            header: true,
+            complete: function (results) {
+                const data = results.data.filter(row => Object.keys(row).length > 1);
 
-                        wordsData = data.map((row, index) => {
-                            const keys = Object.keys(row);
-                            const letter = row[keys[0]] || '';
-                            const word = row[keys[1]] || '';
-                            const definition = row[keys[2]] || '';
-                            const rule = row[keys[3]] || 'Empieza por';
+                wordsData = data.map((row, index) => {
+                    const keys = Object.keys(row);
+                    const letter = row[keys[0]] || '';
+                    const word = row[keys[1]] || '';
+                    const definition = row[keys[2]] || '';
+                    const rule = row[keys[3]] || 'Empieza por';
 
-                            return {
-                                id: `word_${index}`,
-                                letter: String(letter).trim().toUpperCase(),
-                                word: String(word).trim(),
-                                definition: String(definition).trim(),
-                                rule: String(rule).trim()
-                            };
-                        }).filter(w => w.word !== '');
+                    return {
+                        id: `word_${index}`,
+                        letter: String(letter).trim().toUpperCase(),
+                        word: String(word).trim(),
+                        definition: String(definition).trim(),
+                        rule: String(rule).trim()
+                    };
+                }).filter(w => w.word !== '');
 
-                        resolve(wordsData);
-                    },
-                    error: function (error) {
-                        reject(error);
-                    }
-                });
-            });
+                resolve(wordsData);
+            },
+            error: function (error) {
+                console.error("PapaParse error:", error);
+                reject(error);
+            }
         });
+    });
 }
 
 // --- Progress Tracking (Local Storage for now) ---
