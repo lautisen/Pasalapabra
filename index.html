@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pasapalabra Flashcards</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- PapaParse for CSV loading -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+    <!-- UI Icons (Lucide) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- SweetAlert2 for beautiful alerts -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body>
+    <div id="app">
+        <header>
+            <div class="header-logo">
+                <i data-lucide="brain-circuit"></i>
+                <h1>Pasapalabra</h1>
+            </div>
+            <div class="user-controls">
+                <span id="user-status">Cargando...</span>
+                <button id="auth-btn" class="btn btn-outline" style="display: none;">Iniciar Sesión</button>
+            </div>
+        </header>
+
+        <main id="main-content" class="loading-state">
+            <!-- Loading Spinner -->
+            <div id="loader" class="loader-container">
+                <div class="spinner"></div>
+                <p>Cargando palabras mágicas...</p>
+            </div>
+
+            <!-- Game Container (Hidden initially) -->
+            <div id="game-container" class="hidden">
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progress-bar"></div>
+                </div>
+                <div class="stats-header">
+                    <span class="stat-badge stat-learned"><i data-lucide="check-circle"></i> <span
+                            id="stat-learned-count">0</span> Aprendidas</span>
+                    <span class="stat-badge stat-learning"><i data-lucide="rotate-cw"></i> <span
+                            id="stat-learning-count">0</span> Practicando</span>
+                </div>
+
+                <!-- Flashcard -->
+                <div class="scene">
+                    <div class="card" id="flashcard">
+                        <div class="card__face card__face--front">
+                            <h2 class="letter-badge" id="card-letter">A</h2>
+                            <p class="rule-text" id="card-rule">Empieza por</p>
+                            <p class="definition-text" id="card-definition">Cargando definición...</p>
+                            <div class="tap-hint">
+                                <i data-lucide="pointer"></i>
+                                Toca para revelar
+                            </div>
+                        </div>
+                        <div class="card__face card__face--back">
+                            <h2 class="word-text" id="card-word">Palabra</h2>
+                            <p class="definition-text-small" id="card-definition-back">Definición</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Controls (Appear after flipping) -->
+                <div class="controls-container hidden" id="game-controls">
+                    <button class="btn btn-success" id="btn-correct">
+                        <i data-lucide="check"></i> Acerté / La sé
+                    </button>
+                    <button class="btn btn-warning" id="btn-practice">
+                        <i data-lucide="help-circle"></i> Quiero practicarla
+                    </button>
+                    <button class="btn btn-danger" id="btn-wrong">
+                        <i data-lucide="x"></i> No la sé
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+        // We will configure firebase inside app.js 
+        window.firebaseApp = initializeApp;
+        window.firebaseFirestore = { getFirestore, doc, getDoc, setDoc };
+    </script>
+
+    <!-- Application Logic -->
+    <script src="app.js"></script>
+</body>
+
+</html>
