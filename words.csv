@@ -1,17 +1,12 @@
 ID,L,T,D,R
 1,E,Empieza,Defecto en el interior de un cañón consistente en un pequeño hoyo,Escarabajo
-2,B,Empieza,"Agente intermediario en
-operaciones financieras o
-comerciales que
-percibe una
-comisión por su intervención.",Bróker
+2,B,Empieza,"Agente intermediario en operaciones financieras o comerciales que percibe una comisión por su intervención.",Bróker
 3,M,Empieza,Se dice del pez con una sola aleta.,Monopterigio
 4,H,Empieza,"Religión politeísta predominante en la India, que afirma la existencia de la reencarnación.",Hinduismo
 5,M,Empieza,Título de honor que concede el papa a determinados eclesiásticos.,Monseñor
 6,N,Empieza,Sobrenombre que utiliza un usuario de Internet para identificarse cuando accede a algunos servicios.,Nick
 7,S,Empieza,"Sencillez, veracidad, modo de expresarse libre de fingimiento.",Sinceridad
-8,P,Empieza ,"Municipio de Colombia en el que se encuentra el monumento a los Lanceros del
-Pantano de Vargas.",Paipa
+8,P,Empieza ,"Municipio de Colombia en el que se encuentra el monumento a los Lanceros del Pantano de Vargas.",Paipa
 9,U,Empieza ,Se dice de la onda electromagnética de longitud inferior a un metro.,Ultracorta
 10,T,Empieza ,Parte del tronco de un árbol que queda unida a la raíz cuando lo cortan por el pie.,Tocón 
 11,Y,Contiene,"Despensa, lugar donde se tienen guardadas las provisiones de comida en una casa.",Pantry
@@ -19,13 +14,10 @@ Pantano de Vargas.",Paipa
 13,C,Empieza ,"Animal invertebrado de cuerpo alargado, estrecho y dividido en veintiún anillos, con un par de patas en cada uno.",Ciempiés
 14,B,Empieza ,Bollo redondo relleno de crema o nata.,Bamba
 15,E,Empieza ,Período de tiempo constituido por los tres días de carnaval.,Entruejo
-16,D,Empieza ,"Contribución que pagaban los fieles a la
-Iglesia, consistente en la décima parte de sus frutos.",Diezmo
+16,D,Empieza ,"Contribución que pagaban los fieles a laIglesia, consistente en la décima parte de sus frutos.",Diezmo
 17,G,Empieza ,Palo grueso y pesado que se utiliza como bastón o como arma.,Garrote
-18,F,Empieza ,"Chabola de las grandes ciudades de
-Brasil.",Favela
-19,I,Empieza ,"Nombre de la dinastía a la que pertenecieron los emperadores bizantinos León 3° y
-Constantino 5°.",Usuarios
+18,F,Empieza ,"Chabola de las grandes ciudades de Brasil.",Favela
+19,I,Empieza ,"Nombre de la dinastía a la que pertenecieron los emperadores bizantinos León 3° y Constantino 5°.",Usuarios
 20,L,Empieza ,Finca rústica de gran extensión.,Latifundio
 21,J,Empieza ,Lenguaje especial y no formal que usan entre sí los individuos de ciertas profesiones у oficios.,Jerga
 22,Q,Contiene,Arte de proyectar y construir edificios.,Arquitectura
@@ -48,8 +40,7 @@ Constantino 5°.",Usuarios
 39,J,Empieza ,Iguana más pequeña que la común.,Jama
 40,H,Empieza ,"En la mitología griega, nombre de la reina de Lemnos que ocultó a su padre, Toante, у con ello le salvó la vida.",Hipsípila
 41,Z,Empieza ,"En Marruecos, mercado.",Zoco
-42,Y,Empieza ,"Título de la novela de la escritora Ursula K.
-Le Guin, que es la cuarta de la saga conocida como ""Historias de Terramar"".",Tehanu
+42,Y,Empieza ,"Título de la novela de la escritora Ursula K. Le Guin, que es la cuarta de la saga conocida como ""Historias de Terramar"".",Tehanu
 43,C,Empieza ,"Pasar la pelota un jugador a otro de su equipo, cuando ambos están cerca.",Ceder
 44,N,Empieza ,Terreno poblado de olmos.,Negrillera
 45,G,Empieza ,Actor de buena presencia que interpreta papeles de hombre seductor.,Galán 
