@@ -64,17 +64,29 @@ function fetchWordsData() {
 
                 wordsData = data.map((row, index) => {
                     const keys = Object.keys(row);
-                    const letter = row[keys[0]] || '';
-                    const word = row[keys[1]] || '';
-                    const definition = row[keys[2]] || '';
-                    const rule = row[keys[3]] || 'Empieza por';
+                    // Expected columns: ID, Letter, Rule, Definition, Word
+                    // Based on spreadsheet: ID, L, T, D, R
+                    let letter = '', word = '', definition = '', rule = '';
+
+                    if (keys.length >= 5) {
+                        letter = row[keys[1]];
+                        rule = row[keys[2]];
+                        definition = row[keys[3]];
+                        word = row[keys[4]];
+                    } else if (keys.length === 4) {
+                        // fallback if no ID column
+                        letter = row[keys[0]];
+                        word = row[keys[1]];
+                        definition = row[keys[2]];
+                        rule = row[keys[3]];
+                    }
 
                     return {
                         id: `word_${index}`,
-                        letter: String(letter).trim().toUpperCase(),
-                        word: String(word).trim(),
-                        definition: String(definition).trim(),
-                        rule: String(rule).trim()
+                        letter: String(letter || '').trim().toUpperCase(),
+                        word: String(word || '').trim(),
+                        definition: String(definition || '').trim(),
+                        rule: String(rule || 'Empieza por').trim()
                     };
                 }).filter(w => w.word !== '');
 
