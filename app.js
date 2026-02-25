@@ -188,15 +188,27 @@ async function saveProgress() {
 // --- Game Logic ---
 
 function showNextCard() {
-    // Reset Card State
+    // Check if card is currently flipped
+    const wasFlipped = card.classList.contains('flipped');
+
+    // Reset Card State (this starts the 0.6s animation back to front)
     card.classList.remove('flipped');
     gameControls.classList.add('hidden');
 
     if (wordsData.length === 0) {
-        cardRule.textContent = "Error";
-        cardDefinition.textContent = "No logramos cargar las palabras. Verifica tu conexión o el enlace.";
-        cardWord.textContent = "Error";
-        cardLetter.style.display = 'none';
+        const updateErrorDOM = () => {
+            cardRule.textContent = "Error";
+            cardDefinition.textContent = "No logramos cargar las palabras. Verifica tu conexión o el enlace.";
+            cardWord.textContent = "Error";
+            cardLetter.style.display = 'none';
+        };
+
+        if (wasFlipped) {
+            if (window.flipTimeout) clearTimeout(window.flipTimeout);
+            window.flipTimeout = setTimeout(updateErrorDOM, 300);
+        } else {
+            updateErrorDOM();
+        }
         return;
     }
 
@@ -241,19 +253,33 @@ function showNextCard() {
     currentCardIndex = targetPool[Math.floor(Math.random() * targetPool.length)];
     const word = wordsData[currentCardIndex];
 
-    // Update DOM
-    if (!word.letter) {
-        cardLetter.style.display = 'none';
+    // Helper to update DOM text content
+    const updateDOM = () => {
+        if (!word.letter) {
+            cardLetter.style.display = 'none';
+        } else {
+            cardLetter.style.display = 'flex';
+            cardLetter.textContent = word.letter;
+        }
+
+        cardRule.textContent = word.rule;
+        cardDefinition.textContent = word.definition;
+
+        cardWord.textContent = word.word;
+        cardDefinitionBack.textContent = word.definition;
+    };
+
+    // If card was showing the back (user answered), it takes 600ms to flip back to the front.
+    // We wait 300ms so the text swaps *exactly* when the card is sideways (invisible).
+    // If it wasn't flipped (initial load), we update immediately.
+    if (wasFlipped) {
+        if (window.flipTimeout) clearTimeout(window.flipTimeout);
+        window.flipTimeout = setTimeout(() => {
+            updateDOM();
+        }, 300);
     } else {
-        cardLetter.style.display = 'flex';
-        cardLetter.textContent = word.letter;
+        updateDOM();
     }
-
-    cardRule.textContent = word.rule;
-    cardDefinition.textContent = word.definition;
-
-    cardWord.textContent = word.word;
-    cardDefinitionBack.textContent = word.definition;
 }
 
 function updateStatsUI() {
