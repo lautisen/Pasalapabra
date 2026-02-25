@@ -1,0 +1,135 @@
+[debug] [2026-02-25T23:31:32.131Z] ----------------------------------------------------------------------
+[debug] [2026-02-25T23:31:32.133Z] Command:       /opt/homebrew/Cellar/node/25.6.1_1/bin/node /Users/lautarosenese/.npm/_npx/ba4f1959e38407b5/node_modules/.bin/firebase init dataconnect --project pasalapabra
+[debug] [2026-02-25T23:31:32.133Z] CLI Version:   15.8.0
+[debug] [2026-02-25T23:31:32.133Z] Platform:      darwin
+[debug] [2026-02-25T23:31:32.133Z] Node Version:  v25.6.1
+[debug] [2026-02-25T23:31:32.133Z] Time:          Thu Feb 26 2026 00:31:32 GMT+0100 (Central European Standard Time)
+[debug] [2026-02-25T23:31:32.133Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-02-25T23:31:32.134Z] >>> [apiv2][query] GET https://firebase-public.firebaseio.com/cli.json [none]
+[info] 
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  /Users/lautarosenese/GitHub/Pasalapabra
+
+[info] 
+=== Project Setup
+[info] 
+[info] First, let's associate this project directory with a Firebase project.
+[info] You can create multiple project aliases by running firebase use --add, 
+[info] 
+[debug] [2026-02-25T23:31:32.387Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-02-25T23:31:32.387Z] > authorizing via signed-in user (bocalauti@gmail.com)
+[debug] [2026-02-25T23:31:32.387Z] Checked if tokens are valid: true, expires at: 1772065213622
+[debug] [2026-02-25T23:31:32.387Z] Checked if tokens are valid: true, expires at: 1772065213622
+[debug] [2026-02-25T23:31:32.387Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/pasalapabra [none]
+[debug] [2026-02-25T23:31:32.641Z] <<< [apiv2][status] GET https://firebase-public.firebaseio.com/cli.json 200
+[debug] [2026-02-25T23:31:32.641Z] <<< [apiv2][body] GET https://firebase-public.firebaseio.com/cli.json {"cloudBuildErrorAfter":1594252800000,"cloudBuildWarnAfter":1590019200000,"defaultNode10After":1594252800000,"minVersion":"3.0.5","node8DeploysDisabledAfter":1613390400000,"node8RuntimeDisabledAfter":1615809600000,"node8WarnAfter":1600128000000}
+[debug] [2026-02-25T23:31:32.710Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/pasalapabra 200
+[debug] [2026-02-25T23:31:32.711Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/pasalapabra {"projectId":"pasalapabra","projectNumber":"144070010039","displayName":"Pasalapabra","name":"projects/pasalapabra","resources":{"hostingSite":"pasalapabra"},"state":"ACTIVE","etag":"1_a8578e49-8a1a-4740-b270-bb0325aef39e"}
+[info] i  Using project pasalapabra (Pasalapabra) . 
+[info] 
+=== Dataconnect Setup
+[info] i  dataconnect: ensuring required API firebasedataconnect.googleapis.com is enabled... 
+[debug] [2026-02-25T23:31:32.720Z] Checked if tokens are valid: true, expires at: 1772065213622
+[debug] [2026-02-25T23:31:32.720Z] Checked if tokens are valid: true, expires at: 1772065213622
+[info] i  dataconnect: ensuring required API sqladmin.googleapis.com is enabled... 
+[debug] [2026-02-25T23:31:32.721Z] Checked if tokens are valid: true, expires at: 1772065213622
+[debug] [2026-02-25T23:31:32.721Z] Checked if tokens are valid: true, expires at: 1772065213622
+[debug] [2026-02-25T23:31:32.721Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/pasalapabra/services/firebasedataconnect.googleapis.com [none]
+[debug] [2026-02-25T23:31:32.721Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/pasalapabra/services/firebasedataconnect.googleapis.com  x-goog-user-project=pasalapabra
+[debug] [2026-02-25T23:31:32.723Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/pasalapabra/services/sqladmin.googleapis.com [none]
+[debug] [2026-02-25T23:31:32.724Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/pasalapabra/services/sqladmin.googleapis.com  x-goog-user-project=pasalapabra
+[debug] [2026-02-25T23:31:33.547Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/pasalapabra/services/firebasedataconnect.googleapis.com 200
+[debug] [2026-02-25T23:31:33.547Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/pasalapabra/services/firebasedataconnect.googleapis.com [omitted]
+[warn] ⚠  dataconnect: missing required API firebasedataconnect.googleapis.com. Enabling now... 
+[debug] [2026-02-25T23:31:33.548Z] Checked if tokens are valid: true, expires at: 1772065213622
+[debug] [2026-02-25T23:31:33.548Z] Checked if tokens are valid: true, expires at: 1772065213622
+[debug] [2026-02-25T23:31:33.548Z] >>> [apiv2][query] POST https://serviceusage.googleapis.com/v1/projects/pasalapabra/services/firebasedataconnect.googleapis.com:enable [none]
+[debug] [2026-02-25T23:31:33.548Z] >>> [apiv2][(partial)header] POST https://serviceusage.googleapis.com/v1/projects/pasalapabra/services/firebasedataconnect.googleapis.com:enable  x-goog-user-project=pasalapabra
+[debug] [2026-02-25T23:31:33.550Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/pasalapabra/services/sqladmin.googleapis.com 200
+[debug] [2026-02-25T23:31:33.550Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/pasalapabra/services/sqladmin.googleapis.com [omitted]
+[warn] ⚠  dataconnect: missing required API sqladmin.googleapis.com. Enabling now... 
+[debug] [2026-02-25T23:31:33.550Z] Checked if tokens are valid: true, expires at: 1772065213622
+[debug] [2026-02-25T23:31:33.550Z] Checked if tokens are valid: true, expires at: 1772065213622
+[debug] [2026-02-25T23:31:33.551Z] >>> [apiv2][query] POST https://serviceusage.googleapis.com/v1/projects/pasalapabra/services/sqladmin.googleapis.com:enable [none]
+[debug] [2026-02-25T23:31:33.551Z] >>> [apiv2][(partial)header] POST https://serviceusage.googleapis.com/v1/projects/pasalapabra/services/sqladmin.googleapis.com:enable  x-goog-user-project=pasalapabra
+[debug] [2026-02-25T23:31:34.142Z] <<< [apiv2][status] POST https://serviceusage.googleapis.com/v1/projects/pasalapabra/services/firebasedataconnect.googleapis.com:enable 200
+[debug] [2026-02-25T23:31:34.142Z] <<< [apiv2][body] POST https://serviceusage.googleapis.com/v1/projects/pasalapabra/services/firebasedataconnect.googleapis.com:enable [omitted]
+[debug] [2026-02-25T23:31:34.641Z] <<< [apiv2][status] POST https://serviceusage.googleapis.com/v1/projects/pasalapabra/services/sqladmin.googleapis.com:enable 200
+[debug] [2026-02-25T23:31:34.641Z] <<< [apiv2][body] POST https://serviceusage.googleapis.com/v1/projects/pasalapabra/services/sqladmin.googleapis.com:enable [omitted]
+[debug] [2026-02-25T23:31:44.649Z] Checked if tokens are valid: true, expires at: 1772065213622
+[debug] [2026-02-25T23:31:44.649Z] Checked if tokens are valid: true, expires at: 1772065213622
+[debug] [2026-02-25T23:31:44.649Z] >>> [apiv2][query] GET https://firebasedataconnect.googleapis.com/v1/projects/pasalapabra/locations/-/services [none]
+[debug] [2026-02-25T23:31:45.714Z] <<< [apiv2][status] GET https://firebasedataconnect.googleapis.com/v1/projects/pasalapabra/locations/-/services 200
+[debug] [2026-02-25T23:31:45.714Z] <<< [apiv2][body] GET https://firebasedataconnect.googleapis.com/v1/projects/pasalapabra/locations/-/services {}
+[info] i  Learn more about Gemini in Firebase and how it uses your data: https://firebase.google.com/docs/gemini-in-firebase#how-gemini-in-firebase-uses-your-data 
+[info] i  : ensuring required API cloudaicompanion.googleapis.com is enabled... 
+[debug] [2026-02-25T23:31:55.536Z] Checked if tokens are valid: true, expires at: 1772065213622
+[debug] [2026-02-25T23:31:55.536Z] Checked if tokens are valid: true, expires at: 1772065213622
+[debug] [2026-02-25T23:31:55.536Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/pasalapabra/services/cloudaicompanion.googleapis.com [none]
+[debug] [2026-02-25T23:31:55.536Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/pasalapabra/services/cloudaicompanion.googleapis.com  x-goog-user-project=pasalapabra
+[debug] [2026-02-25T23:31:56.337Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/pasalapabra/services/cloudaicompanion.googleapis.com 200
+[debug] [2026-02-25T23:31:56.337Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/pasalapabra/services/cloudaicompanion.googleapis.com [omitted]
+[info] ✔  : required API cloudaicompanion.googleapis.com is enabled 
+[debug] [2026-02-25T23:32:16.400Z] ----------------------------------------------------------------------
+[debug] [2026-02-25T23:32:16.401Z] Command:       /opt/homebrew/Cellar/node/25.6.1_1/bin/node /Users/lautarosenese/.npm/_npx/ba4f1959e38407b5/node_modules/.bin/firebase init dataconnect --project pasalapabra
+[debug] [2026-02-25T23:32:16.401Z] CLI Version:   15.8.0
+[debug] [2026-02-25T23:32:16.401Z] Platform:      darwin
+[debug] [2026-02-25T23:32:16.401Z] Node Version:  v25.6.1
+[debug] [2026-02-25T23:32:16.401Z] Time:          Thu Feb 26 2026 00:32:16 GMT+0100 (Central European Standard Time)
+[debug] [2026-02-25T23:32:16.401Z] ----------------------------------------------------------------------
+[debug] 
+[info] 
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  /Users/lautarosenese/GitHub/Pasalapabra
+
+[info] 
+=== Project Setup
+[info] 
+[info] First, let's associate this project directory with a Firebase project.
+[info] You can create multiple project aliases by running firebase use --add, 
+[info] 
+[debug] [2026-02-25T23:32:16.634Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-02-25T23:32:16.634Z] > authorizing via signed-in user (bocalauti@gmail.com)
+[debug] [2026-02-25T23:32:16.634Z] Checked if tokens are valid: true, expires at: 1772065213622
+[debug] [2026-02-25T23:32:16.634Z] Checked if tokens are valid: true, expires at: 1772065213622
+[debug] [2026-02-25T23:32:16.634Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/pasalapabra [none]
+[debug] [2026-02-25T23:32:16.922Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/pasalapabra 200
+[debug] [2026-02-25T23:32:16.922Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/pasalapabra {"projectId":"pasalapabra","projectNumber":"144070010039","displayName":"Pasalapabra","name":"projects/pasalapabra","resources":{"hostingSite":"pasalapabra"},"state":"ACTIVE","etag":"1_a8578e49-8a1a-4740-b270-bb0325aef39e"}
+[info] i  Using project pasalapabra (Pasalapabra) . 
+[info] 
+=== Dataconnect Setup
+[info] i  dataconnect: ensuring required API firebasedataconnect.googleapis.com is enabled... 
+[info] i  dataconnect: ensuring required API sqladmin.googleapis.com is enabled... 
+[debug] [2026-02-25T23:32:16.930Z] Checked if tokens are valid: true, expires at: 1772065213622
+[debug] [2026-02-25T23:32:16.930Z] Checked if tokens are valid: true, expires at: 1772065213622
+[debug] [2026-02-25T23:32:16.930Z] >>> [apiv2][query] GET https://firebasedataconnect.googleapis.com/v1/projects/pasalapabra/locations/-/services [none]
+[debug] [2026-02-25T23:32:17.952Z] <<< [apiv2][status] GET https://firebasedataconnect.googleapis.com/v1/projects/pasalapabra/locations/-/services 200
+[debug] [2026-02-25T23:32:17.953Z] <<< [apiv2][body] GET https://firebasedataconnect.googleapis.com/v1/projects/pasalapabra/locations/-/services {}
+[debug] [2026-02-25T23:32:23.014Z] Checked if tokens are valid: true, expires at: 1772065213622
+[debug] [2026-02-25T23:32:23.015Z] Checked if tokens are valid: true, expires at: 1772065213622
+[debug] [2026-02-25T23:32:23.015Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/pasalapabra/billingInfo [none]
+[debug] [2026-02-25T23:32:23.377Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/pasalapabra/billingInfo 200
+[debug] [2026-02-25T23:32:23.377Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/pasalapabra/billingInfo {"name":"projects/pasalapabra/billingInfo","projectId":"pasalapabra","billingAccountName":"","billingEnabled":false}
+[debug] [2026-02-25T23:32:23.378Z] Checked if tokens are valid: true, expires at: 1772065213622
+[debug] [2026-02-25T23:32:23.378Z] Checked if tokens are valid: true, expires at: 1772065213622
+[debug] [2026-02-25T23:32:23.378Z] >>> [apiv2][query] GET https://monitoring.googleapis.com/v3/projects/pasalapabra/timeSeries/ filter=metric.type%3D%22serviceruntime.googleapis.com%2Fquota%2Fallocation%2Fusage%22+AND+metric.label.quota_metric+%3D+%22sqladmin.googleapis.com%2Ffdc_lifetime_free_trial_per_project%22&interval.endTime=2026-02-25T23%3A32%3A23.377Z&interval.startTime=2026-02-18T23%3A32%3A23.377Z
+[debug] [2026-02-25T23:32:24.489Z] <<< [apiv2][status] GET https://monitoring.googleapis.com/v3/projects/pasalapabra/timeSeries/ 200
+[debug] [2026-02-25T23:32:24.489Z] <<< [apiv2][body] GET https://monitoring.googleapis.com/v3/projects/pasalapabra/timeSeries/ {"unit":"1"}
+[warn] ⚠  dataconnect: Cannot detect an existing app in the current directory. 
+[debug] [2026-02-25T23:32:33.319Z] Error: read EIO
+    at TTY.onStreamRead (node:internal/stream_base_commons:216:20)
