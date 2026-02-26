@@ -44,7 +44,33 @@
                 <p>Cargando palabras mágicas...</p>
             </div>
 
-            <!-- Game Container (Hidden initially) -->
+            <!-- ══════════════════════════════════════ -->
+            <!-- MODE SELECTOR                          -->
+            <!-- ══════════════════════════════════════ -->
+            <div id="mode-selector" class="hidden">
+                <h2 class="mode-title">¿Cómo quieres jugar?</h2>
+                <div class="mode-cards">
+                    <button class="mode-card" id="mode-classic" data-mode="classic">
+                        <div class="mode-icon">📖</div>
+                        <div class="mode-name">Clásico</div>
+                        <div class="mode-desc">Ves la definición y adivinas la palabra</div>
+                    </button>
+                    <button class="mode-card" id="mode-inverted" data-mode="inverted">
+                        <div class="mode-icon">🔄</div>
+                        <div class="mode-name">Invertido</div>
+                        <div class="mode-desc">Ves la palabra y recuerdas la definición</div>
+                    </button>
+                    <button class="mode-card" id="mode-rosco" data-mode="rosco">
+                        <div class="mode-icon">🏆</div>
+                        <div class="mode-name">Rosco</div>
+                        <div class="mode-desc">25 palabras, una por letra · 2 minutos · ¡Cero errores!</div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ══════════════════════════════════════ -->
+            <!-- FLASHCARD GAME (Classic & Inverted)   -->
+            <!-- ══════════════════════════════════════ -->
             <div id="game-container" class="hidden">
                 <div class="progress-bar-container">
                     <div class="progress-bar" id="progress-bar"></div>
@@ -57,6 +83,10 @@
                     <button class="btn btn-danger" id="btn-reset-stats"
                         style="font-size: 0.8rem; padding: 0.2rem 0.5rem; margin-left: auto; max-width: max-content;">
                         <i data-lucide="refresh-cw" style="width: 14px; height: 14px; margin-right: 5px;"></i> Resetear
+                    </button>
+                    <button class="btn btn-outline" id="btn-back-to-menu"
+                        style="font-size: 0.8rem; padding: 0.2rem 0.5rem; max-width: max-content;">
+                        <i data-lucide="layout-grid" style="width: 14px; height: 14px; margin-right: 5px;"></i> Modos
                     </button>
                 </div>
 
@@ -100,9 +130,66 @@
                     </button>
                 </div>
             </div>
+
+            <!-- ══════════════════════════════════════ -->
+            <!-- ROSCO MODE                             -->
+            <!-- ══════════════════════════════════════ -->
+            <div id="rosco-container" class="hidden">
+                <div class="rosco-header">
+                    <div class="rosco-stats">
+                        <span class="rosco-stat rosco-stat-correct">
+                            <i data-lucide="check-circle"></i>
+                            <span id="rosco-correct">0</span>
+                        </span>
+                        <span class="rosco-stat rosco-stat-wrong">
+                            <i data-lucide="x-circle"></i>
+                            <span id="rosco-wrong">0</span>
+                        </span>
+                        <span class="rosco-stat rosco-stat-skip">
+                            <i data-lucide="skip-forward"></i>
+                            <span id="rosco-skipped">0</span>
+                        </span>
+                    </div>
+                    <div class="rosco-timer" id="rosco-timer">2:00</div>
+                    <button class="btn btn-outline" id="rosco-back-btn"
+                        style="font-size: 0.8rem; padding: 0.2rem 0.5rem;">
+                        <i data-lucide="layout-grid" style="width: 14px; height: 14px;"></i>
+                    </button>
+                </div>
+
+                <!-- Rosco wheel -->
+                <div class="rosco-wheel-wrapper">
+                    <svg id="rosco-svg" class="rosco-svg" viewBox="0 0 400 400"></svg>
+                    <div class="rosco-center">
+                        <div class="rosco-center-letter" id="rosco-center-letter">A</div>
+                        <div class="rosco-center-label" id="rosco-center-rule">Empieza por</div>
+                    </div>
+                </div>
+
+                <!-- Question -->
+                <div class="rosco-question-box">
+                    <p class="rosco-question-text" id="rosco-question">Cargando...</p>
+                </div>
+
+                <!-- Answer input -->
+                <div class="rosco-input-row">
+                    <input type="text" id="rosco-answer" class="rosco-input" placeholder="Escribe la respuesta..."
+                        autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                    <button class="btn btn-success" id="rosco-submit">
+                        <i data-lucide="send"></i>
+                    </button>
+                </div>
+
+                <div class="rosco-skip-row">
+                    <button class="btn btn-warning" id="rosco-pasapalabra">
+                        <i data-lucide="skip-forward"></i> Pasapalabra
+                    </button>
+                </div>
+            </div>
+
         </main>
         <footer style="text-align: center; padding: 10px; color: var(--text-secondary); font-size: 0.8rem;">
-            v1.5
+            v2.0
         </footer>
     </div>
 
@@ -119,7 +206,7 @@
     </script>
 
     <!-- Application Logic -->
-    <script src="app.js?v=5"></script>
+    <script src="app.js?v=6"></script>
 </body>
 
 </html>

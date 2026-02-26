@@ -446,3 +446,318 @@ main {
         padding: 6px !important;
     }
 }
+
+/* ════════════════════════════════════════════
+   MODE SELECTOR
+   ════════════════════════════════════════════ */
+#mode-selector {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-grow: 1;
+    padding: 1rem 0;
+}
+
+.mode-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    background: linear-gradient(to right, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-align: center;
+}
+
+.mode-cards {
+    display: flex;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+    max-width: 720px;
+}
+
+.mode-card {
+    flex: 1 1 180px;
+    max-width: 220px;
+    background: var(--bg-card);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1.5rem;
+    padding: 2rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    color: var(--text-main);
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.mode-card:hover {
+    transform: translateY(-6px) scale(1.03);
+    box-shadow: 0 20px 40px rgba(99, 102, 241, 0.3);
+    border-color: var(--primary);
+}
+
+.mode-icon {
+    font-size: 2.4rem;
+    line-height: 1;
+}
+
+.mode-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.mode-desc {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+}
+
+@media (max-width: 600px) {
+    .mode-title {
+        font-size: 1.2rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .mode-cards {
+        gap: 0.75rem;
+    }
+
+    .mode-card {
+        padding: 1.25rem 0.75rem;
+        flex: 1 1 130px;
+        max-width: 160px;
+    }
+
+    .mode-icon {
+        font-size: 1.8rem;
+    }
+
+    .mode-name {
+        font-size: 0.95rem;
+    }
+}
+
+/* ════════════════════════════════════════════
+   ROSCO MODE
+   ════════════════════════════════════════════ */
+#rosco-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    gap: 0.75rem;
+}
+
+.rosco-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.rosco-stats {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.rosco-stat {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 0.4rem 0.75rem;
+    border-radius: 2rem;
+    backdrop-filter: blur(8px);
+}
+
+.rosco-stat svg {
+    width: 18px;
+    height: 18px;
+}
+
+.rosco-stat-correct {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.rosco-stat-wrong {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.rosco-stat-skip {
+    background: rgba(245, 158, 11, 0.15);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.rosco-timer {
+    font-size: 1.6rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    background: linear-gradient(to right, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    min-width: 60px;
+    text-align: center;
+}
+
+.rosco-timer-urgent {
+    background: linear-gradient(to right, #ef4444, #f59e0b);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: pulse 1s infinite;
+}
+
+/* Wheel */
+.rosco-wheel-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 340px;
+    aspect-ratio: 1;
+    margin: 0 auto;
+}
+
+.rosco-svg {
+    width: 100%;
+    height: 100%;
+}
+
+.rosco-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    pointer-events: none;
+}
+
+.rosco-center-letter {
+    font-size: 3rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1;
+}
+
+.rosco-center-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+}
+
+/* Question box */
+.rosco-question-box {
+    background: var(--bg-card);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1.25rem;
+    padding: 1.25rem 1.5rem;
+    width: 100%;
+    max-width: 480px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    transition: background 0.3s ease;
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.rosco-feedback-correct {
+    background: rgba(16, 185, 129, 0.25) !important;
+    border-color: #10b981 !important;
+}
+
+.rosco-feedback-wrong {
+    background: rgba(239, 68, 68, 0.25) !important;
+    border-color: #ef4444 !important;
+}
+
+.rosco-question-text {
+    font-size: 1.1rem;
+    line-height: 1.5;
+    font-weight: 300;
+}
+
+/* Answer input */
+.rosco-input-row {
+    display: flex;
+    gap: 0.75rem;
+    width: 100%;
+    max-width: 480px;
+}
+
+.rosco-input {
+    flex: 1;
+    padding: 0.85rem 1.25rem;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: var(--bg-card);
+    color: var(--text-main);
+    font-family: 'Outfit', sans-serif;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s ease;
+    backdrop-filter: blur(10px);
+}
+
+.rosco-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+.rosco-skip-row {
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    justify-content: center;
+}
+
+@media (max-width: 600px) {
+    .rosco-wheel-wrapper {
+        max-width: 280px;
+    }
+
+    .rosco-center-letter {
+        font-size: 2rem;
+    }
+
+    .rosco-timer {
+        font-size: 1.2rem;
+    }
+
+    .rosco-stat {
+        font-size: 0.85rem;
+        padding: 0.3rem 0.55rem;
+    }
+
+    .rosco-question-text {
+        font-size: 1rem;
+    }
+
+    .rosco-input {
+        font-size: 0.95rem;
+        padding: 0.7rem 1rem;
+    }
+}
