@@ -37,7 +37,37 @@ let currentCardIndex = -1;
 let userData = {
     progress: {} // { wordId: { correctCount: 0, daysPlayed: [], status: 'learning' } }
 };
-let recentCards = [];
+// Shuffle queue: words are played in shuffled order, never repeating until all have been seen
+let shuffleQueue = [];  // indices into wordsData
+let lastPlayedIndex = -1;
+
+function fisherYates(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+}
+
+function buildShuffleQueue() {
+    // Build weighted pool: learning x3, practicing x2, learned x1
+    const weighted = [];
+    wordsData.forEach((w, idx) => {
+        const p = userData.progress[w.id];
+        const status = p ? p.status : 'learning';
+        const weight = status === 'learning' ? 3 : status === 'practicing' ? 2 : 1;
+        for (let i = 0; i < weight; i++) weighted.push(idx);
+    });
+    // Shuffle and ensure first card differs from the last played card
+    let q = fisherYates(weighted);
+    // Remove leading duplicates of lastPlayedIndex to avoid back-to-back repeats across deck resets
+    while (q.length > 1 && q[0] === lastPlayedIndex) {
+        q = fisherYates(weighted);
+    }
+    shuffleQueue = q;
+    console.log(`Queue rebuilt: ${shuffleQueue.length} slots for ${wordsData.length} words.`);
+}
 
 // DOM Elements
 const loader = document.getElementById('loader');
@@ -149,7 +179,8 @@ function setupEventListeners() {
                 }
                 localStorage.setItem('pasapalabra_progress_' + (currentUser || 'guest'), JSON.stringify(userData));
                 updateStatsUI();
-                recentCards = [];
+                shuffleQueue = [];
+                lastPlayedIndex = -1;
                 showNextCard();
                 Swal.fire('Reseteado', 'Tu progreso ha sido reiniciado.', 'success');
             }
@@ -305,37 +336,15 @@ function showNextCard() {
 
     if (wordsData.length === 0) return;
 
-    const learningPool = [];
-    const practicingPool = [];
-    const learnedPool = [];
+    // Rebuild queue when empty
+    if (shuffleQueue.length === 0) {
+        buildShuffleQueue();
+    }
 
-    wordsData.forEach((w, index) => {
-        const p = userData.progress[w.id];
-        if (!p || p.status === 'learning') learningPool.push(index);
-        else if (p.status === 'practicing') practicingPool.push(index);
-        else learnedPool.push(index);
-    });
-
-    const rand = Math.random();
-    let targetPool = learningPool;
-
-    if (rand < 0.6 && learningPool.length > 0) targetPool = learningPool;
-    else if (rand < 0.9 && practicingPool.length > 0) targetPool = practicingPool;
-    else if (learnedPool.length > 0) targetPool = learnedPool;
-    else if (learningPool.length > 0) targetPool = learningPool;
-    else targetPool = practicingPool;
-
-    if (targetPool.length === 0) targetPool = [Math.floor(Math.random() * wordsData.length)];
-
-    let filteredPool = targetPool.filter(idx => !recentCards.includes(idx));
-    if (filteredPool.length === 0) filteredPool = targetPool;
-
-    currentCardIndex = filteredPool[Math.floor(Math.random() * filteredPool.length)];
+    currentCardIndex = shuffleQueue.shift();
+    lastPlayedIndex = currentCardIndex;
     const word = wordsData[currentCardIndex];
 
-    const maxRecent = Math.max(0, Math.min(50, Math.floor(wordsData.length * 0.6)));
-    recentCards.push(currentCardIndex);
-    if (recentCards.length > maxRecent) recentCards.shift();
 
     const updateDOM = () => {
         cardLetter.style.display = word.letter ? 'flex' : 'none';
