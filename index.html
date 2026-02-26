@@ -203,8 +203,20 @@
             </div>
 
         </main>
-        <footer style="text-align: center; padding: 10px; color: var(--text-secondary); font-size: 0.8rem;">
-            v2.0
+        <footer style="text-align: center; padding: 20px 10px; color: var(--text-muted); width: 100%;">
+            <div style="display: flex; justify-content: center; gap: 15px; margin-bottom: 10px; flex-wrap: wrap;">
+                <button id="btn-sound-toggle" class="btn"
+                    style="background: rgba(255,255,255,0.05); color: var(--text-secondary); border: 1px solid rgba(255,255,255,0.1); padding: 0.5rem 1.2rem; display: flex; align-items: center; gap: 0.5rem; border-radius: 99px;">
+                    <i data-lucide="volume-2" id="icon-sound" style="width: 18px; height: 18px;"></i>
+                    <span id="text-sound" style="font-size: 0.85rem;">Sonido ON</span>
+                </button>
+                <button id="btn-share" class="btn"
+                    style="background: rgba(255,255,255,0.05); color: var(--primary); border: 1px solid rgba(255,255,255,0.1); padding: 0.5rem 1.2rem; display: flex; align-items: center; gap: 0.5rem; border-radius: 99px;">
+                    <i data-lucide="share" style="width: 18px; height: 18px;"></i>
+                    <span style="font-size: 0.85rem;">Compartir</span>
+                </button>
+            </div>
+            <div style="font-size: 0.75rem; margin-top: 15px;">v2.0</div>
         </footer>
     </div>
 

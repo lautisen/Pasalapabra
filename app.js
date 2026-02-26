@@ -198,12 +198,19 @@ async function init() {
         const soundIcon = document.getElementById('icon-sound');
 
         const updateSoundIcon = () => {
+            const textSound = document.getElementById('text-sound');
             if (playSounds) {
-                soundIcon.setAttribute('data-lucide', 'volume-2');
-                soundIcon.style.color = 'var(--success)';
+                if (soundIcon) {
+                    soundIcon.setAttribute('data-lucide', 'volume-2');
+                    soundIcon.style.color = 'var(--success)';
+                }
+                if (textSound) textSound.textContent = 'Sonido ON';
             } else {
-                soundIcon.setAttribute('data-lucide', 'volume-x');
-                soundIcon.style.color = 'var(--text-muted)';
+                if (soundIcon) {
+                    soundIcon.setAttribute('data-lucide', 'volume-x');
+                    soundIcon.style.color = 'var(--text-muted)';
+                }
+                if (textSound) textSound.textContent = 'Sonido OFF';
             }
             lucide.createIcons();
         };
@@ -215,6 +222,48 @@ async function init() {
                 playSounds = !playSounds;
                 localStorage.setItem('pasalapabra_sounds', playSounds);
                 updateSoundIcon();
+                if (playSounds && sounds.skip) sounds.skip.play();
+            });
+        }
+
+        // Share functionality
+        const shareBtn = document.getElementById('btn-share');
+        if (shareBtn) {
+            shareBtn.addEventListener('click', async () => {
+                let text = '🧠 ¡Estoy aprendiendo vocabulario con Pasalapabra!\n';
+                if (userData && userData.roscoBest) {
+                    const m = Math.floor(userData.roscoBest.time / 60);
+                    const s = String(userData.roscoBest.time % 60).padStart(2, '0');
+                    text += `🏆 Mi récord en el Rosco es: ${userData.roscoBest.correct} correctas en ${m}:${s} mins.\n`;
+                }
+                text += '\n¡Atrévete a probarlo!';
+
+                if (navigator.share) {
+                    try {
+                        await navigator.share({
+                            title: 'Pasalapabra',
+                            text: text,
+                            url: window.location.href
+                        });
+                    } catch (e) {
+                        console.log('Error compartiendo', e);
+                    }
+                } else {
+                    Swal.fire({
+                        title: 'Compartir',
+                        text: 'Copia este enlace para enviarlo a tus amigos:',
+                        input: 'text',
+                        inputValue: window.location.href,
+                        showCancelButton: true,
+                        confirmButtonText: 'Copiar',
+                        cancelButtonText: 'Cerrar'
+                    }).then(result => {
+                        if (result.isConfirmed) {
+                            navigator.clipboard.writeText(window.location.href);
+                            Swal.fire('Copiado', 'Enlace copiado', 'success');
+                        }
+                    });
+                }
             });
         }
 
