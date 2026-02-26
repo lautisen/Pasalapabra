@@ -99,25 +99,39 @@ async function init() {
         updateUIForUser();
 
         console.log("Fetching CSV...");
-        // 1. Fetch Data
+        // 1. Fetch Data (do first so login screen appears while data loads)
         await fetchWordsData();
 
         console.log("Loaded", wordsData.length, "words.");
 
-        // 2. Load Progress
+        // 2. Require login before playing
+        if (!currentUser) {
+            await promptLogin();
+            // If ADMIN logged in, promptLogin handles the flow separately
+            if (currentUser === 'ADMIN') {
+                loader.classList.add('hidden');
+                gameContainer.classList.remove('hidden');
+                await loadPendingReports();
+                setupEventListeners();
+                await showAdminPanel();
+                return;
+            }
+        }
+
+        // 3. Load Progress
         if (db && currentUser) {
             await loadFirebaseProgress();
         } else {
             loadLocalProgress();
         }
 
-        // 3. Load pending reports (exclude flagged words from queue)
+        // 4. Load pending reports (exclude flagged words from queue)
         await loadPendingReports();
 
-        // 4. Setup Events
+        // 5. Setup Events
         setupEventListeners();
 
-        // 5. Start Game
+        // 6. Start Game
         showNextCard();
 
         // Show UI
@@ -132,6 +146,28 @@ async function init() {
         `;
         lucide.createIcons();
     }
+}
+
+async function promptLogin() {
+    let username = '';
+    while (!username.trim()) {
+        const result = await Swal.fire({
+            title: '👋 ¡Bienvenido/a!',
+            text: 'Introduce tu nombre para empezar a jugar.',
+            input: 'text',
+            inputPlaceholder: 'Tu nombre o alias...',
+            confirmButtonText: 'Empezar',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            inputValidator: (value) => {
+                if (!value || !value.trim()) return '¡Necesitas un nombre para continuar!';
+            }
+        });
+        username = result.value || '';
+    }
+    currentUser = username.trim();
+    localStorage.setItem('pasapalabra_current_user', currentUser);
+    updateUIForUser();
 }
 
 function setupEventListeners() {
@@ -340,13 +376,14 @@ async function saveProgress() {
 async function loadPendingReports() {
     if (!db) return;
     try {
-        const { getDocs, query, collection, where } = window.firebaseFirestore;
-        const snap = await getDocs(query(
-            collection(db, 'reports'),
-            where('status', '==', 'pending')
-        ));
+        const { getDocs, collection } = window.firebaseFirestore;
+        // Get ALL reports and filter client-side to avoid needing a Firestore index
+        const snap = await getDocs(collection(db, 'reports'));
         pendingReportWordIds.clear();
-        snap.forEach(d => pendingReportWordIds.add(d.data().wordId));
+        snap.forEach(d => {
+            const data = d.data();
+            if (data.status === 'pending') pendingReportWordIds.add(data.wordId);
+        });
         console.log(`Pending reports loaded: ${pendingReportWordIds.size} word(s) excluded.`);
     } catch (e) {
         console.error('Error loading pending reports:', e);
@@ -362,15 +399,17 @@ async function showAdminPanel() {
 
     let reports = [];
     try {
-        const { getDocs, query, collection, where } = window.firebaseFirestore;
-        const snap = await getDocs(query(
-            collection(db, 'reports'),
-            where('status', '==', 'pending')
-        ));
-        snap.forEach(d => reports.push({ id: d.id, ...d.data() }));
+        const { getDocs, collection } = window.firebaseFirestore;
+        // Fetch all and filter client-side to avoid needing a Firestore composite index
+        const snap = await getDocs(collection(db, 'reports'));
+        snap.forEach(d => {
+            const data = d.data();
+            if (data.status === 'pending') reports.push({ id: d.id, ...data });
+        });
     } catch (e) {
         console.error('Error loading reports for admin:', e);
-        Swal.fire('Error', 'No se pudieron cargar los reportes.', 'error');
+        Swal.fire('Error', 'No se pudieron cargar los reportes. Revisa la consola.', 'error');
+        showNextCard();
         return;
     }
     Swal.close();
@@ -545,11 +584,25 @@ function updateUIForUser() {
 
 async function handleAuth() {
     if (currentUser) {
+        // Logout → clear session and re-prompt (login is mandatory)
         currentUser = null;
         localStorage.removeItem('pasapalabra_current_user');
         userData = { progress: {} };
-        loadLocalProgress();
         updateUIForUser();
+        await promptLogin();
+        // After re-login, if ADMIN go to admin panel
+        if (currentUser === 'ADMIN') {
+            await showAdminPanel();
+            return;
+        }
+        if (db) {
+            await loadFirebaseProgress();
+            await loadPendingReports();
+            shuffleQueue = [];
+        } else {
+            loadLocalProgress();
+        }
+        updateStatsUI();
         showNextCard();
         return;
     }
