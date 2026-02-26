@@ -15,6 +15,44 @@ let db = null;
 let analytics = null;
 let currentUser = localStorage.getItem('pasapalabra_current_user') || null;
 
+// --- Admin Security ---
+// SHA-256 hash of the admin password. Never store the plain-text password in code.
+const ADMIN_PASSWORD_HASH = 'c9976f2b1a59565defa9a604f370987dae81b71207b6ced4f0ac7dd452ed5868';
+
+async function hashPassword(password) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    return Array.from(new Uint8Array(hashBuffer))
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('');
+}
+
+async function verifyAdminPassword() {
+    const { value: pw } = await Swal.fire({
+        title: '🔐 Acceso Admin',
+        text: 'Introduce la contraseña de administrador:',
+        input: 'password',
+        inputPlaceholder: 'Contraseña...',
+        confirmButtonText: 'Entrar',
+        showCancelButton: true,
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        inputAttributes: { autocomplete: 'current-password' }
+    });
+    if (!pw) return false;
+    const hashed = await hashPassword(pw);
+    if (hashed !== ADMIN_PASSWORD_HASH) {
+        await Swal.fire('❌ Contraseña incorrecta', 'Acceso denegado.', 'error');
+        // Reset username so ADMIN is not persisted on failure
+        currentUser = null;
+        localStorage.removeItem('pasapalabra_current_user');
+        updateUIForUser();
+        return false;
+    }
+    return true;
+}
+
 function initFirebase() {
     try {
         const app = window.firebaseApp(firebaseConfig);
@@ -107,14 +145,20 @@ async function init() {
         // 2. Require login before playing
         if (!currentUser) {
             await promptLogin();
-            // If ADMIN logged in, promptLogin handles the flow separately
+            // If ADMIN logged in, verify password then open admin panel
             if (currentUser === 'ADMIN') {
-                loader.classList.add('hidden');
-                gameContainer.classList.remove('hidden');
-                await loadPendingReports();
-                setupEventListeners();
-                await showAdminPanel();
-                return;
+                const ok = await verifyAdminPassword();
+                if (!ok) {
+                    // Password failed: re-prompt normal login
+                    await promptLogin();
+                } else {
+                    loader.classList.add('hidden');
+                    gameContainer.classList.remove('hidden');
+                    await loadPendingReports();
+                    setupEventListeners();
+                    await showAdminPanel();
+                    return;
+                }
             }
         }
 
@@ -622,8 +666,27 @@ async function handleAuth() {
 
         // --- ADMIN MODE ---
         if (currentUser === 'ADMIN') {
-            await showAdminPanel();
-            return;
+            const ok = await verifyAdminPassword();
+            if (!ok) {
+                // Password failed — let them try a normal login instead
+                const result2 = await Swal.fire({
+                    title: 'Iniciar Sesión',
+                    input: 'text',
+                    inputPlaceholder: 'Tu nombre o alias...',
+                    confirmButtonText: 'Entrar',
+                    showCancelButton: true
+                });
+                if (result2.value && result2.value.trim()) {
+                    currentUser = result2.value.trim();
+                    localStorage.setItem('pasalapabra_current_user', currentUser);
+                    updateUIForUser();
+                } else {
+                    return;
+                }
+            } else {
+                await showAdminPanel();
+                return;
+            }
         }
 
         // --- Regular user ---

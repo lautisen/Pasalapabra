@@ -1,19 +1,39 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Los usuarios pueden leer y escribir SU PROPIO progreso (basado en el nombre de usuario).
-    // Nota: Como no usamos Firebase Auth con contraseña, cualquier usuario podría
-    // técnicamente usar el nombre de otro, pero esto evita accesos globales a la DB.
+
+    // ── Users collection ──────────────────────────────────────────────
+    // Each document ID is the username. Only progress data is stored.
+    // Without Firebase Auth we can't verify identity server-side,
+    // but we restrict the shape of writes to prevent abuse.
     match /users/{userId} {
-      allow read, write: if true;
+      // Anyone can read any user doc (needed to load progress on login).
+      allow read: if true;
+
+      // Only allow writes that contain expected fields and no extra data.
+      // This prevents someone from injecting arbitrary data.
+      allow write: if request.resource.data.keys().hasOnly(['progress', 'lastUpdated'])
+                   && request.resource.data.progress is map;
     }
 
-    // Cualquier persona puede enviar un reporte de error (create: true).
-    // Pero solo los administradores (desde Firebase Console) pueden leer o borrar reportes.
+    // ── Reports collection ────────────────────────────────────────────
     match /reports/{reportId} {
-      allow create: if true;
-      allow read, update: if true;
+      // Anyone can create a report, but only with the correct expected fields.
+      allow create: if request.resource.data.keys().hasAll(['wordId', 'word', 'issue', 'reportedBy', 'timestamp', 'status'])
+                    && request.resource.data.status == 'pending';
+
+      // Anyone can read reports (needed for the admin panel client-side).
+      allow read: if true;
+
+      // Only allow updating the status field (for admin resolution).
+      // The update must set status to 'resolved' and include resolvedBy + resolvedAt.
+      allow update: if request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['status', 'resolvedBy', 'resolvedAt'])
+                    && request.resource.data.status == 'resolved';
+
+      // Nobody can delete reports from the client.
+      allow delete: if false;
     }
+
   }
 }
