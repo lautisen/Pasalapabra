@@ -256,27 +256,50 @@ main {
 
 .letter-badge {
     position: absolute;
-    top: -20px;
+    top: -36px;
     background: linear-gradient(135deg, var(--primary), var(--secondary));
-    width: 60px;
-    height: 60px;
+    width: 88px;
+    height: 88px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2rem;
+    font-size: 3.2rem;
     font-weight: 700;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
-    border: 4px solid var(--bg-dark);
+    box-shadow: 0 12px 30px -4px rgba(99, 102, 241, 0.6);
+    border: 5px solid var(--bg-dark);
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s ease;
+}
+
+.letter-badge:hover {
+    transform: scale(1.08);
 }
 
 .rule-text {
-    color: var(--warning);
-    font-weight: 600;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    font-size: 0.875rem;
-    margin-bottom: 1rem;
+    letter-spacing: 2px;
+    font-size: 0.8rem;
+    margin-bottom: 1.2rem;
+    margin-top: 0.5rem;
+    padding: 0.3rem 0.9rem;
+    border-radius: 2rem;
+    display: inline-block;
+}
+
+/* 'Empieza por' — green pill */
+.rule-text.rule-starts {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+/* 'Contiene' — orange/amber pill */
+.rule-text.rule-contains {
+    background: rgba(245, 158, 11, 0.15);
+    color: var(--warning);
+    border: 1px solid rgba(245, 158, 11, 0.4);
 }
 
 .definition-text {

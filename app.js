@@ -350,6 +350,9 @@ function showNextCard() {
         cardLetter.style.display = word.letter ? 'flex' : 'none';
         cardLetter.textContent = word.letter || '';
         cardRule.textContent = word.rule;
+        // Colour-code the rule pill: 'Contiene' → amber, everything else (Empieza) → green
+        const isContains = word.rule.toLowerCase().includes('contiene');
+        cardRule.className = 'rule-text ' + (isContains ? 'rule-contains' : 'rule-starts');
         cardDefinition.textContent = word.definition;
         cardWord.textContent = word.word;
         cardDefinitionBack.textContent = word.definition;
