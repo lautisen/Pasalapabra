@@ -1,0 +1,19 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Los usuarios pueden leer y escribir SU PROPIO progreso (basado en el nombre de usuario).
+    // Nota: Como no usamos Firebase Auth con contraseña, cualquier usuario podría
+    // técnicamente usar el nombre de otro, pero esto evita accesos globales a la DB.
+    match /users/{userId} {
+      allow read, write: if true;
+    }
+
+    // Cualquier persona puede enviar un reporte de error (create: true).
+    // Pero solo los administradores (desde Firebase Console) pueden leer o borrar reportes.
+    match /reports/{reportId} {
+      allow create: if true;
+      allow read, update, delete: if false;
+    }
+  }
+}

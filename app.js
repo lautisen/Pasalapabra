@@ -37,6 +37,7 @@ let currentCardIndex = -1;
 let userData = {
     progress: {} // { wordId: { correctCount: 0, daysPlayed: [], status: 'learning' } }
 };
+let recentCards = [];
 
 // DOM Elements
 const loader = document.getElementById('loader');
@@ -188,15 +189,27 @@ async function saveProgress() {
 // --- Game Logic ---
 
 function showNextCard() {
-    // Reset Card State
+    // Check if card is currently flipped
+    const wasFlipped = card.classList.contains('flipped');
+
+    // Reset Card State (this starts the 0.6s animation back to front)
     card.classList.remove('flipped');
     gameControls.classList.add('hidden');
 
     if (wordsData.length === 0) {
-        cardRule.textContent = "Error";
-        cardDefinition.textContent = "No logramos cargar las palabras. Verifica tu conexión o el enlace.";
-        cardWord.textContent = "Error";
-        cardLetter.style.display = 'none';
+        const updateErrorDOM = () => {
+            cardRule.textContent = "Error";
+            cardDefinition.textContent = "No logramos cargar las palabras. Verifica tu conexión o el enlace.";
+            cardWord.textContent = "Error";
+            cardLetter.style.display = 'none';
+        };
+
+        if (wasFlipped) {
+            if (window.flipTimeout) clearTimeout(window.flipTimeout);
+            window.flipTimeout = setTimeout(updateErrorDOM, 300);
+        } else {
+            updateErrorDOM();
+        }
         return;
     }
 
@@ -237,23 +250,62 @@ function showNextCard() {
         targetPool = [Math.floor(Math.random() * wordsData.length)];
     }
 
-    // Pick random from target pool
-    currentCardIndex = targetPool[Math.floor(Math.random() * targetPool.length)];
-    const word = wordsData[currentCardIndex];
-
-    // Update DOM
-    if (!word.letter) {
-        cardLetter.style.display = 'none';
-    } else {
-        cardLetter.style.display = 'flex';
-        cardLetter.textContent = word.letter;
+    let filteredPool = targetPool.filter(idx => !recentCards.includes(idx));
+    if (filteredPool.length === 0) {
+        filteredPool = targetPool; // fallback if all in pool were recently shown
     }
 
-    cardRule.textContent = word.rule;
-    cardDefinition.textContent = word.definition;
+    // Pick random from target pool
+    currentCardIndex = filteredPool[Math.floor(Math.random() * filteredPool.length)];
+    const word = wordsData[currentCardIndex];
 
-    cardWord.textContent = word.word;
-    cardDefinitionBack.textContent = word.definition;
+    // Shuffle history tracking
+    const maxRecent = Math.max(0, Math.min(50, Math.floor(wordsData.length * 0.6)));
+    recentCards.push(currentCardIndex);
+    if (recentCards.length > maxRecent) {
+        recentCards.shift();
+    }
+
+    // Helper to update DOM text content
+    const updateDOM = () => {
+        if (!word.letter) {
+            cardLetter.style.display = 'none';
+        } else {
+            cardLetter.style.display = 'flex';
+            cardLetter.textContent = word.letter;
+        }
+
+        cardRule.textContent = word.rule;
+        cardDefinition.textContent = word.definition;
+
+        cardWord.textContent = word.word;
+        cardDefinitionBack.textContent = word.definition;
+    };
+
+    if (wasFlipped) {
+        // Ocultar el texto con una transición suave antes/durante el giro
+        cardDefinition.style.transition = 'opacity 0.2s ease';
+        cardRule.style.transition = 'opacity 0.2s ease';
+        cardLetter.style.transition = 'opacity 0.2s ease';
+
+        cardDefinition.style.opacity = '0';
+        cardRule.style.opacity = '0';
+        cardLetter.style.opacity = '0';
+
+        if (window.flipTimeout) clearTimeout(window.flipTimeout);
+        window.flipTimeout = setTimeout(() => {
+            updateDOM();
+            // Restaurar la opacidad para que el nuevo texto aparezca suavemente
+            cardDefinition.style.opacity = '1';
+            cardRule.style.opacity = '1';
+            cardLetter.style.opacity = '1';
+        }, 400);
+    } else {
+        updateDOM();
+        cardDefinition.style.opacity = '1';
+        cardRule.style.opacity = '1';
+        cardLetter.style.opacity = '1';
+    }
 }
 
 function updateStatsUI() {
@@ -304,7 +356,14 @@ function handleAnswer(status) {
     }
 
     saveProgress();
-    showNextCard();
+
+    // Escondemos los controles inmediatamente para evitar múltiples clics rápidos
+    gameControls.classList.add('hidden');
+
+    // Damos un poco de tiempo para visualizar la respuesta antes de girar a la siguiente
+    setTimeout(() => {
+        showNextCard();
+    }, 600); // 600ms de retraso
 }
 
 // --- Event Listeners ---
@@ -319,6 +378,33 @@ card.addEventListener('click', () => {
 document.getElementById('btn-correct').addEventListener('click', () => handleAnswer('correct'));
 document.getElementById('btn-practice').addEventListener('click', () => handleAnswer('practice'));
 document.getElementById('btn-wrong').addEventListener('click', () => handleAnswer('wrong'));
+
+if (document.getElementById('btn-reset-stats')) {
+    document.getElementById('btn-reset-stats').addEventListener('click', async () => {
+        const { isConfirmed } = await Swal.fire({
+            title: '¿Resetear progreso?',
+            text: 'Perderás todas las estadísticas de palabras aprendidas y practicadas. Esto no se puede deshacer.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: 'var(--danger)',
+            cancelButtonColor: 'var(--text-secondary)',
+            confirmButtonText: 'Sí, resetear',
+            cancelButtonText: 'Cancelar'
+        });
+
+        if (isConfirmed) {
+            userData.progress = {};
+            await saveProgress();
+            updateStatsUI();
+
+            // clear recent cards history on reset
+            recentCards = [];
+
+            showNextCard();
+            Swal.fire('Reseteado', 'Tu progreso ha sido reiniciado a cero.', 'success');
+        }
+    });
+}
 
 // Report Button
 document.getElementById('btn-report').addEventListener('click', async () => {
