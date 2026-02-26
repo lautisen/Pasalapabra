@@ -109,17 +109,17 @@
     <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
-        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc, getDocs, query, collection, where } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-analytics.js";
 
         // We will configure firebase inside app.js 
         window.firebaseApp = initializeApp;
-        window.firebaseFirestore = { getFirestore, doc, getDoc, setDoc };
+        window.firebaseFirestore = { getFirestore, doc, getDoc, setDoc, getDocs, query, collection, where };
         window.firebaseAnalytics = getAnalytics;
     </script>
 
     <!-- Application Logic -->
-    <script src="app.js?v=4"></script>
+    <script src="app.js?v=5"></script>
 </body>
 
 </html>

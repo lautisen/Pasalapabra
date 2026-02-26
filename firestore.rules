@@ -13,7 +13,7 @@ service cloud.firestore {
     // Pero solo los administradores (desde Firebase Console) pueden leer o borrar reportes.
     match /reports/{reportId} {
       allow create: if true;
-      allow read, update, delete: if false;
+      allow read, update: if true;
     }
   }
 }

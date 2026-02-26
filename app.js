@@ -41,6 +41,9 @@ let userData = {
 let shuffleQueue = [];  // indices into wordsData
 let lastPlayedIndex = -1;
 
+// Set of wordIds with pending reports — excluded from the shuffle queue
+let pendingReportWordIds = new Set();
+
 function fisherYates(arr) {
     const a = [...arr];
     for (let i = a.length - 1; i > 0; i--) {
@@ -52,21 +55,25 @@ function fisherYates(arr) {
 
 function buildShuffleQueue() {
     // Build weighted pool: learning x3, practicing x2, learned x1
+    // Words with pending reports are excluded
     const weighted = [];
     wordsData.forEach((w, idx) => {
+        if (pendingReportWordIds.has(w.id)) return; // skip reported words
         const p = userData.progress[w.id];
         const status = p ? p.status : 'learning';
         const weight = status === 'learning' ? 3 : status === 'practicing' ? 2 : 1;
         for (let i = 0; i < weight; i++) weighted.push(idx);
     });
-    // Shuffle and ensure first card differs from the last played card
+    if (weighted.length === 0) {
+        // Fallback: all words are reported — include everything
+        wordsData.forEach((_, idx) => weighted.push(idx));
+    }
     let q = fisherYates(weighted);
-    // Remove leading duplicates of lastPlayedIndex to avoid back-to-back repeats across deck resets
     while (q.length > 1 && q[0] === lastPlayedIndex) {
         q = fisherYates(weighted);
     }
     shuffleQueue = q;
-    console.log(`Queue rebuilt: ${shuffleQueue.length} slots for ${wordsData.length} words.`);
+    console.log(`Queue rebuilt: ${shuffleQueue.length} slots for ${wordsData.length} words (${pendingReportWordIds.size} excluded).`);
 }
 
 // DOM Elements
@@ -104,10 +111,13 @@ async function init() {
             loadLocalProgress();
         }
 
-        // 3. Setup Events
+        // 3. Load pending reports (exclude flagged words from queue)
+        await loadPendingReports();
+
+        // 4. Setup Events
         setupEventListeners();
 
-        // 4. Start Game
+        // 5. Start Game
         showNextCard();
 
         // Show UI
@@ -327,6 +337,101 @@ async function saveProgress() {
     }
 }
 
+async function loadPendingReports() {
+    if (!db) return;
+    try {
+        const { getDocs, query, collection, where } = window.firebaseFirestore;
+        const snap = await getDocs(query(
+            collection(db, 'reports'),
+            where('status', '==', 'pending')
+        ));
+        pendingReportWordIds.clear();
+        snap.forEach(d => pendingReportWordIds.add(d.data().wordId));
+        console.log(`Pending reports loaded: ${pendingReportWordIds.size} word(s) excluded.`);
+    } catch (e) {
+        console.error('Error loading pending reports:', e);
+    }
+}
+
+async function showAdminPanel() {
+    if (!db) {
+        Swal.fire('Sin conexión', 'El panel de admin requiere Firebase activo.', 'warning');
+        return;
+    }
+    Swal.fire({ title: 'Cargando reportes...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+    let reports = [];
+    try {
+        const { getDocs, query, collection, where } = window.firebaseFirestore;
+        const snap = await getDocs(query(
+            collection(db, 'reports'),
+            where('status', '==', 'pending')
+        ));
+        snap.forEach(d => reports.push({ id: d.id, ...d.data() }));
+    } catch (e) {
+        console.error('Error loading reports for admin:', e);
+        Swal.fire('Error', 'No se pudieron cargar los reportes.', 'error');
+        return;
+    }
+    Swal.close();
+
+    if (reports.length === 0) {
+        await Swal.fire({
+            icon: 'success',
+            title: '¡Todo limpio!',
+            text: 'No hay reportes pendientes.',
+            confirmButtonText: 'Ir al juego'
+        });
+        showNextCard();
+        return;
+    }
+
+    // Review each report one by one
+    for (let i = 0; i < reports.length; i++) {
+        const r = reports[i];
+        const reportDate = r.timestamp ? new Date(r.timestamp).toLocaleString('es-ES') : '—';
+
+        const result = await Swal.fire({
+            title: `<span style="font-size:1rem;opacity:0.6">Reporte ${i + 1} de ${reports.length}</span>`,
+            html: `
+                <div style="text-align:left;line-height:1.8;">
+                    <p><strong>🔤 Palabra:</strong> <code style="font-size:1.1rem;font-weight:700">${r.word || '—'}</code></p>
+                    <p><strong>📖 Definición:</strong> ${r.definition || '—'}</p>
+                    <hr style="margin:0.75rem 0;opacity:0.2">
+                    <p><strong>⚠️ Problema reportado:</strong></p>
+                    <blockquote style="background:rgba(255,255,255,0.05);border-left:3px solid #ef4444;padding:0.5rem 0.75rem;border-radius:4px;margin:0.25rem 0;">${r.issue}</blockquote>
+                    <p style="font-size:0.8rem;opacity:0.6;margin-top:0.5rem">👤 Reportado por <strong>${r.reportedBy}</strong> · ${reportDate}</p>
+                </div>`,
+            showCancelButton: true,
+            confirmButtonColor: '#10b981',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: '✅ Resuelto',
+            cancelButtonText: '⏭ Siguiente',
+            allowOutsideClick: false
+        });
+
+        if (result.isConfirmed) {
+            // Mark as resolved in Firestore
+            try {
+                await window.firebaseFirestore.setDoc(
+                    window.firebaseFirestore.doc(db, 'reports', r.id),
+                    { status: 'resolved', resolvedBy: 'ADMIN', resolvedAt: new Date().toISOString() },
+                    { merge: true }
+                );
+                pendingReportWordIds.delete(r.wordId);
+                // Flush queue so the word can re-appear
+                shuffleQueue = [];
+            } catch (e) {
+                console.error('Error resolving report:', e);
+                Swal.fire('Error', 'No se pudo actualizar el reporte.', 'error');
+            }
+        }
+    }
+
+    await Swal.fire({ icon: 'info', title: 'Revisión completada', text: 'Puedes seguir jugando.', timer: 2000, showConfirmButton: false });
+    showNextCard();
+}
+
 // --- Game Logic ---
 
 function showNextCard() {
@@ -452,6 +557,7 @@ async function handleAuth() {
     const { value: username } = await Swal.fire({
         title: 'Iniciar Sesión',
         input: 'text',
+        inputPlaceholder: 'Ej. jugador123 (o ADMIN)',
         confirmButtonText: 'Entrar',
         showCancelButton: true
     });
@@ -460,11 +566,22 @@ async function handleAuth() {
         currentUser = username.trim();
         localStorage.setItem('pasapalabra_current_user', currentUser);
         updateUIForUser();
+
+        // --- ADMIN MODE ---
+        if (currentUser === 'ADMIN') {
+            await showAdminPanel();
+            return;
+        }
+
+        // --- Regular user ---
         userData = { progress: {} };
         if (db) {
             Swal.fire({ title: 'Cargando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
             await loadFirebaseProgress();
+            await loadPendingReports(); // refresh exclusions after login
             Swal.close();
+            // Flush queue so exclusions take effect immediately
+            shuffleQueue = [];
         } else {
             loadLocalProgress();
         }
