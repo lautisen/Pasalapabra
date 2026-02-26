@@ -65,6 +65,38 @@ function initFirebase() {
 }
 
 // ════════════════════════════════════════════
+// --- Sounds & Confetti ---
+let playSounds = localStorage.getItem('pasalapabra_sounds') !== 'false';
+const sounds = {
+    correct: new Howl({ src: ['https://actions.google.com/sounds/v1/cartoon/cartoon_boing.ogg'], volume: 0.5 }),
+    wrong: new Howl({ src: ['https://actions.google.com/sounds/v1/cartoon/cartoon_cowbell.ogg'], volume: 0.5 }),
+    skip: new Howl({ src: ['https://actions.google.com/sounds/v1/ui/navigation_forward.ogg'], volume: 0.4 }),
+    win: new Howl({ src: ['https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg'], volume: 0.7 })
+};
+
+function playSound(type) {
+    if (playSounds && sounds[type]) {
+        sounds[type].play();
+    }
+}
+
+function fireConfetti() {
+    const count = 200;
+    const defaults = { origin: { y: 0.7 } };
+
+    function fire(particleRatio, opts) {
+        confetti(Object.assign({}, defaults, opts, {
+            particleCount: Math.floor(count * particleRatio)
+        }));
+    }
+
+    fire(0.25, { spread: 26, startVelocity: 55 });
+    fire(0.2, { spread: 60 });
+    fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+    fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+    fire(0.1, { spread: 120, startVelocity: 45 });
+}
+
 // Global State
 // ════════════════════════════════════════════
 let wordsData = [];
@@ -160,6 +192,31 @@ async function init() {
         // Show mode selector
         loader.classList.add('hidden');
         showModeSelector();
+
+        // Sound Toggle
+        const soundBtn = document.getElementById('btn-sound-toggle');
+        const soundIcon = document.getElementById('icon-sound');
+
+        const updateSoundIcon = () => {
+            if (playSounds) {
+                soundIcon.setAttribute('data-lucide', 'volume-2');
+                soundIcon.style.color = 'var(--success)';
+            } else {
+                soundIcon.setAttribute('data-lucide', 'volume-x');
+                soundIcon.style.color = 'var(--text-muted)';
+            }
+            lucide.createIcons();
+        };
+
+        updateSoundIcon();
+
+        if (soundBtn) {
+            soundBtn.addEventListener('click', () => {
+                playSounds = !playSounds;
+                localStorage.setItem('pasalapabra_sounds', playSounds);
+                updateSoundIcon();
+            });
+        }
 
         // Logo returns to home
         const logo = document.getElementById('header-logo');
@@ -505,10 +562,12 @@ function submitRoscoAnswer() {
     if (answer === correct || levenshtein(answer, correct) <= 1) {
         roscoWords[roscoCurrentIdx].status = 'correct';
         roscoCorrect++;
+        playSound('correct');
         showRoscoFeedback(true, w.word);
     } else {
         roscoWords[roscoCurrentIdx].status = 'wrong';
         roscoWrong++;
+        playSound('wrong');
         showRoscoFeedback(false, w.word);
         delay = 2000;
     }
@@ -531,6 +590,7 @@ function submitRoscoAnswer() {
 
 function roscoPassaWord() {
     if (roscoFinished) return;
+    playSound('skip');
     const w = roscoWords[roscoCurrentIdx];
     // Keep status as 'pending'
     roscoSkipped++;
@@ -596,6 +656,8 @@ async function endRosco(reason) {
             userData.roscoBest = { correct, time: timeUsed };
             isNewBest = true;
             saveProgress();
+            playSound('win');
+            fireConfetti();
         }
     }
 
@@ -728,8 +790,28 @@ function levenshtein(a, b) {
 // ════════════════════════════════════════════
 // Data Fetching
 // ════════════════════════════════════════════
+const CACHE_KEY = 'pasalapabra_words_cache';
+const CACHE_EXPIRY_MS = 24 * 60 * 60 * 1000; // 24 hours
+
 function fetchWordsData() {
     return new Promise((resolve, reject) => {
+        const cachedStr = localStorage.getItem(CACHE_KEY);
+        if (cachedStr) {
+            try {
+                const cache = JSON.parse(cachedStr);
+                const now = Date.now();
+                if (now - cache.timestamp < CACHE_EXPIRY_MS && cache.data && cache.data.length > 0) {
+                    console.log("Cargando desde caché local...");
+                    wordsData = cache.data;
+                    resolve(wordsData);
+                    return;
+                }
+            } catch (e) {
+                console.warn("Error leyendo la caché:", e);
+            }
+        }
+
+        console.log("Descargando desde Google Sheets...");
         Papa.parse(SPREADSHEET_URL, {
             download: true,
             header: true,
@@ -758,6 +840,17 @@ function fetchWordsData() {
                         rule: String(rule || 'Empieza por').trim()
                     };
                 }).filter(w => w.word !== '');
+
+                // Save to cache
+                try {
+                    localStorage.setItem(CACHE_KEY, JSON.stringify({
+                        timestamp: Date.now(),
+                        data: wordsData
+                    }));
+                } catch (e) {
+                    console.warn("No se pudo guardar la caché:", e);
+                }
+
                 resolve(wordsData);
             },
             error: function (error) { reject(error); }
@@ -901,13 +994,22 @@ function handleAnswer(status) {
     }
     const p = userData.progress[word.id];
     if (status === 'correct') {
+        playSound('correct');
         p.correctCount++;
         if (!p.daysPlayed.includes(today)) p.daysPlayed.push(today);
-        if (p.correctCount >= 10 || p.daysPlayed.length >= 5) p.status = 'learned';
-        else p.status = 'practicing';
+        if (p.correctCount >= 10 || p.daysPlayed.length >= 5) {
+            const wasLearned = p.status === 'learned';
+            p.status = 'learned';
+            if (!wasLearned) {
+                playSound('win');
+                fireConfetti();
+            }
+        } else p.status = 'practicing';
     } else if (status === 'practice') {
+        playSound('skip');
         p.status = 'practicing';
     } else {
+        playSound('wrong');
         p.status = 'learning';
     }
     saveProgress();
