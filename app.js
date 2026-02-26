@@ -69,7 +69,7 @@ function initFirebase() {
 // ════════════════════════════════════════════
 let wordsData = [];
 let currentCardIndex = -1;
-let userData = { progress: {} };
+let userData = { progress: {}, roscoBest: null };
 let shuffleQueue = [];
 let lastPlayedIndex = -1;
 let pendingReportWordIds = new Set();
@@ -326,11 +326,12 @@ function setupFlashcardListeners() {
             });
             if (isConfirmed) {
                 userData.progress = {};
+                userData.roscoBest = null;
                 if (db && currentUser) {
                     try {
                         await window.firebaseFirestore.setDoc(
                             window.firebaseFirestore.doc(db, "users", currentUser),
-                            { progress: {}, lastUpdated: new Date().toISOString() },
+                            { progress: {}, roscoBest: null, lastUpdated: new Date().toISOString() },
                             { merge: true }
                         );
                     } catch (e) { console.error("Firebase reset error:", e); }
@@ -386,7 +387,7 @@ const SPANISH_ALPHABET = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K',
 let roscoWords = [];  // [{letter, word, definition, rule, status}] status: 'pending'|'correct'|'wrong'|'skip'
 let roscoCurrentIdx = 0;
 let roscoTimerInterval = null;
-let roscoSecondsLeft = 120;
+let roscoSecondsElapsed = 0;
 let roscoCorrect = 0;
 let roscoWrong = 0;
 let roscoSkipped = 0;
@@ -414,7 +415,7 @@ function startRosco() {
     roscoWrong = 0;
     roscoSkipped = 0;
     roscoFinished = false;
-    roscoSecondsLeft = 120;
+    roscoSecondsElapsed = 0;
 
     drawRoscoWheel();
     updateRoscoStats();
@@ -423,12 +424,8 @@ function startRosco() {
 
     stopRoscoTimer();
     roscoTimerInterval = setInterval(() => {
-        roscoSecondsLeft--;
+        roscoSecondsElapsed++;
         updateRoscoTimer();
-        if (roscoSecondsLeft <= 0) {
-            stopRoscoTimer();
-            endRosco('timeout');
-        }
     }, 1000);
 }
 
@@ -440,12 +437,12 @@ function stopRoscoTimer() {
 }
 
 function updateRoscoTimer() {
-    const m = Math.floor(roscoSecondsLeft / 60);
-    const s = roscoSecondsLeft % 60;
+    const m = Math.floor(roscoSecondsElapsed / 60);
+    const s = roscoSecondsElapsed % 60;
     const timerEl = document.getElementById('rosco-timer');
     if (timerEl) {
         timerEl.textContent = `${m}:${String(s).padStart(2, '0')}`;
-        timerEl.className = 'rosco-timer' + (roscoSecondsLeft <= 30 ? ' rosco-timer-urgent' : '');
+        timerEl.className = 'rosco-timer';
     }
 }
 
@@ -497,6 +494,8 @@ function submitRoscoAnswer() {
     const w = roscoWords[roscoCurrentIdx];
     const correct = w.word.toUpperCase();
 
+    let delay = 600;
+
     if (answer === correct || levenshtein(answer, correct) <= 1) {
         roscoWords[roscoCurrentIdx].status = 'correct';
         roscoCorrect++;
@@ -505,6 +504,7 @@ function submitRoscoAnswer() {
         roscoWords[roscoCurrentIdx].status = 'wrong';
         roscoWrong++;
         showRoscoFeedback(false, w.word);
+        delay = 2000;
     }
 
     updateRoscoStats();
@@ -514,13 +514,13 @@ function submitRoscoAnswer() {
     // Check if all done
     const pending = roscoWords.filter(w => w.status === 'pending');
     if (pending.length === 0) {
-        setTimeout(() => endRosco('complete'), 800);
+        setTimeout(() => endRosco('complete'), delay);
         return;
     }
 
     // Move to next
     roscoCurrentIdx = (roscoCurrentIdx + 1) % roscoWords.length;
-    setTimeout(() => showCurrentRoscoQuestion(), 400);
+    setTimeout(() => showCurrentRoscoQuestion(), delay);
 }
 
 function roscoPassaWord() {
@@ -546,7 +546,13 @@ function showRoscoFeedback(isCorrect, word) {
     if (!box) return;
     const cls = isCorrect ? 'rosco-feedback-correct' : 'rosco-feedback-wrong';
     box.classList.add(cls);
-    setTimeout(() => box.classList.remove(cls), 500);
+
+    if (!isCorrect) {
+        const textEl = document.getElementById('rosco-question');
+        textEl.innerHTML = `<strong>¡Incorrecto!</strong> Era: <span style="text-transform: uppercase; color: #ef4444; font-weight: bold;">${word}</span>`;
+    }
+
+    setTimeout(() => box.classList.remove(cls), isCorrect ? 500 : 2000);
 }
 
 async function endRosco(reason) {
@@ -558,16 +564,34 @@ async function endRosco(reason) {
     const wrong = roscoWords.filter(w => w.status === 'wrong').length;
     const skip = roscoWords.filter(w => w.status === 'skip').length;
     const pending = roscoWords.filter(w => w.status === 'pending').length;
-    const timeUsed = 120 - roscoSecondsLeft;
+    const timeUsed = roscoSecondsElapsed;
     const mm = Math.floor(timeUsed / 60);
     const ss = timeUsed % 60;
 
     let icon = correct === total ? 'success' : wrong === 0 && pending === 0 ? 'info' : 'warning';
     let title = correct === total
         ? '🏆 ¡Rosco completado!'
-        : reason === 'timeout'
-            ? '⏰ ¡Se acabó el tiempo!'
-            : '📊 Resultados del Rosco';
+        : '📊 Resultados del Rosco';
+
+    // Track Personal Best
+    let isNewBest = false;
+    if (correct > 0) {
+        if (!userData.roscoBest || correct > userData.roscoBest.correct || (correct === userData.roscoBest.correct && timeUsed < userData.roscoBest.time)) {
+            userData.roscoBest = { correct, time: timeUsed };
+            isNewBest = true;
+            saveProgress();
+        }
+    }
+
+    let pbHtml = '';
+    if (userData.roscoBest) {
+        const pbM = Math.floor(userData.roscoBest.time / 60);
+        const pbS = userData.roscoBest.time % 60;
+        pbHtml = `<div style="margin-top: 1rem; padding: 0.5rem; border: 1px dashed rgba(255,255,255,0.2); border-radius: 0.5rem;">
+            ${isNewBest ? '<span style="color:#f59e0b; font-weight:bold;">¡Nuevo Récord Personal! 🌟</span><br>' : '<span style="color:#94a3b8; font-size:0.85rem;">Mejor marca personal:</span><br>'}
+            <strong style="color:var(--text-main);">${userData.roscoBest.correct} correctas</strong> en ${pbM}:${String(pbS).padStart(2, '0')}
+        </div>`;
+    }
 
     await Swal.fire({
         title,
@@ -587,14 +611,11 @@ async function endRosco(reason) {
                         <div style="font-size:2rem;font-weight:700;color:#f59e0b">${skip}</div>
                         <div style="font-size:0.8rem;color:#94a3b8">Pasadas</div>
                     </div>
-                    ${pending > 0 ? `<div style="background:rgba(100,116,139,0.15);border:1px solid #64748b;border-radius:1rem;padding:0.75rem 1.25rem;">
-                        <div style="font-size:2rem;font-weight:700;color:#94a3b8">${pending}</div>
-                        <div style="font-size:0.8rem;color:#94a3b8">Sin llegar</div>
-                    </div>` : ''}
                 </div>
                 <p style="color:#94a3b8;font-size:0.9rem;margin-top:0.5rem">
-                    Tiempo usado: <strong>${mm}:${String(ss).padStart(2, '0')}</strong> de 2:00
+                    Tiempo consumido: <strong>${mm}:${String(ss).padStart(2, '0')}</strong>
                 </p>
+                ${pbHtml}
             </div>`,
         confirmButtonText: 'Jugar de nuevo',
         showDenyButton: true,
@@ -743,7 +764,9 @@ async function loadFirebaseProgress() {
         const docRef = window.firebaseFirestore.doc(db, "users", currentUser);
         const docSnap = await window.firebaseFirestore.getDoc(docRef);
         if (docSnap.exists()) {
-            userData.progress = docSnap.data().progress || {};
+            const data = docSnap.data();
+            userData.progress = data.progress || {};
+            userData.roscoBest = data.roscoBest || null;
             updateStatsUI();
             return true;
         }
@@ -759,7 +782,7 @@ async function saveProgress() {
         try {
             await window.firebaseFirestore.setDoc(
                 window.firebaseFirestore.doc(db, "users", currentUser),
-                { progress: userData.progress, lastUpdated: new Date().toISOString() },
+                { progress: userData.progress, roscoBest: userData.roscoBest, lastUpdated: new Date().toISOString() },
                 { merge: true }
             );
         } catch (e) { console.error("Error al guardar en Firebase", e); }
@@ -921,7 +944,7 @@ async function handleAuth() {
     if (currentUser) {
         currentUser = null;
         localStorage.removeItem('pasapalabra_current_user');
-        userData = { progress: {} };
+        userData = { progress: {}, roscoBest: null };
         updateUIForUser();
         await promptLogin();
         if (currentUser === 'ADMIN') {
@@ -968,7 +991,7 @@ async function handleAuth() {
             }
         }
 
-        userData = { progress: {} };
+        userData = { progress: {}, roscoBest: null };
         if (db) {
             Swal.fire({ title: 'Cargando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
             await loadFirebaseProgress();
