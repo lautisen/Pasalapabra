@@ -37,6 +37,7 @@ let currentCardIndex = -1;
 let userData = {
     progress: {} // { wordId: { correctCount: 0, daysPlayed: [], status: 'learning' } }
 };
+let recentCards = [];
 
 // DOM Elements
 const loader = document.getElementById('loader');
@@ -249,9 +250,21 @@ function showNextCard() {
         targetPool = [Math.floor(Math.random() * wordsData.length)];
     }
 
+    let filteredPool = targetPool.filter(idx => !recentCards.includes(idx));
+    if (filteredPool.length === 0) {
+        filteredPool = targetPool; // fallback if all in pool were recently shown
+    }
+
     // Pick random from target pool
-    currentCardIndex = targetPool[Math.floor(Math.random() * targetPool.length)];
+    currentCardIndex = filteredPool[Math.floor(Math.random() * filteredPool.length)];
     const word = wordsData[currentCardIndex];
+
+    // Shuffle history tracking
+    const maxRecent = Math.max(0, Math.min(50, Math.floor(wordsData.length * 0.6)));
+    recentCards.push(currentCardIndex);
+    if (recentCards.length > maxRecent) {
+        recentCards.shift();
+    }
 
     // Helper to update DOM text content
     const updateDOM = () => {
@@ -269,16 +282,29 @@ function showNextCard() {
         cardDefinitionBack.textContent = word.definition;
     };
 
-    // If card was showing the back (user answered), it takes 600ms to flip back to the front.
-    // We wait 300ms so the text swaps *exactly* when the card is sideways (invisible).
-    // If it wasn't flipped (initial load), we update immediately.
     if (wasFlipped) {
+        // Ocultar el texto con una transición suave antes/durante el giro
+        cardDefinition.style.transition = 'opacity 0.2s ease';
+        cardRule.style.transition = 'opacity 0.2s ease';
+        cardLetter.style.transition = 'opacity 0.2s ease';
+
+        cardDefinition.style.opacity = '0';
+        cardRule.style.opacity = '0';
+        cardLetter.style.opacity = '0';
+
         if (window.flipTimeout) clearTimeout(window.flipTimeout);
         window.flipTimeout = setTimeout(() => {
             updateDOM();
-        }, 300);
+            // Restaurar la opacidad para que el nuevo texto aparezca suavemente
+            cardDefinition.style.opacity = '1';
+            cardRule.style.opacity = '1';
+            cardLetter.style.opacity = '1';
+        }, 400);
     } else {
         updateDOM();
+        cardDefinition.style.opacity = '1';
+        cardRule.style.opacity = '1';
+        cardLetter.style.opacity = '1';
     }
 }
 
@@ -330,7 +356,14 @@ function handleAnswer(status) {
     }
 
     saveProgress();
-    showNextCard();
+
+    // Escondemos los controles inmediatamente para evitar múltiples clics rápidos
+    gameControls.classList.add('hidden');
+
+    // Damos un poco de tiempo para visualizar la respuesta antes de girar a la siguiente
+    setTimeout(() => {
+        showNextCard();
+    }, 600); // 600ms de retraso
 }
 
 // --- Event Listeners ---
@@ -345,6 +378,33 @@ card.addEventListener('click', () => {
 document.getElementById('btn-correct').addEventListener('click', () => handleAnswer('correct'));
 document.getElementById('btn-practice').addEventListener('click', () => handleAnswer('practice'));
 document.getElementById('btn-wrong').addEventListener('click', () => handleAnswer('wrong'));
+
+if (document.getElementById('btn-reset-stats')) {
+    document.getElementById('btn-reset-stats').addEventListener('click', async () => {
+        const { isConfirmed } = await Swal.fire({
+            title: '¿Resetear progreso?',
+            text: 'Perderás todas las estadísticas de palabras aprendidas y practicadas. Esto no se puede deshacer.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: 'var(--danger)',
+            cancelButtonColor: 'var(--text-secondary)',
+            confirmButtonText: 'Sí, resetear',
+            cancelButtonText: 'Cancelar'
+        });
+
+        if (isConfirmed) {
+            userData.progress = {};
+            await saveProgress();
+            updateStatsUI();
+
+            // clear recent cards history on reset
+            recentCards = [];
+
+            showNextCard();
+            Swal.fire('Reseteado', 'Tu progreso ha sido reiniciado a cero.', 'success');
+        }
+    });
+}
 
 // Report Button
 document.getElementById('btn-report').addEventListener('click', async () => {
