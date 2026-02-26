@@ -184,6 +184,11 @@ main {
     gap: 0.75rem;
     width: 100%;
     margin-bottom: 2rem;
+    position: relative;
+}
+
+#btn-back-to-menu {
+    margin-bottom: 2rem;
 }
 
 .stat-badge {
@@ -397,6 +402,10 @@ main {
         gap: 0.5rem;
     }
 
+    #btn-back-to-menu {
+        margin-bottom: 1.5rem;
+    }
+
     .stat-badge {
         font-size: 0.75rem;
         padding: 0.35rem 0.7rem;
@@ -404,7 +413,7 @@ main {
 
     .scene {
         height: 260px;
-        margin-bottom: 1.2rem;
+        margin-bottom: 2rem;
     }
 
     .card__face {
