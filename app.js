@@ -13,7 +13,7 @@ const firebaseConfig = {
 
 let db = null;
 let analytics = null;
-let currentUser = localStorage.getItem('pasapalabra_current_user') || null;
+let currentUser = localStorage.getItem('pasalapabra_current_user') || null;
 
 // --- Admin Security ---
 const ADMIN_PASSWORD_HASH = 'c9976f2b1a59565defa9a604f370987dae81b71207b6ced4f0ac7dd452ed5868';
@@ -44,7 +44,7 @@ async function verifyAdminPassword() {
     if (hashed !== ADMIN_PASSWORD_HASH) {
         await Swal.fire('❌ Contraseña incorrecta', 'Acceso denegado.', 'error');
         currentUser = null;
-        localStorage.removeItem('pasapalabra_current_user');
+        localStorage.removeItem('pasalapabra_current_user');
         updateUIForUser();
         return false;
     }
@@ -160,6 +160,12 @@ async function init() {
         // Show mode selector
         loader.classList.add('hidden');
         showModeSelector();
+
+        // Logo returns to home
+        const logo = document.getElementById('header-logo');
+        if (logo) logo.addEventListener('click', () => {
+            if (currentUser) showModeSelector();
+        });
 
     } catch (error) {
         console.error("Error initializing app:", error);
@@ -336,7 +342,7 @@ function setupFlashcardListeners() {
                         );
                     } catch (e) { console.error("Firebase reset error:", e); }
                 }
-                localStorage.setItem('pasapalabra_progress_' + (currentUser || 'guest'), JSON.stringify(userData));
+                localStorage.setItem('pasalapabra_progress_' + (currentUser || 'guest'), JSON.stringify(userData));
                 updateStatsUI();
                 shuffleQueue = [];
                 lastPlayedIndex = -1;
@@ -526,9 +532,13 @@ function submitRoscoAnswer() {
 function roscoPassaWord() {
     if (roscoFinished) return;
     const w = roscoWords[roscoCurrentIdx];
-    w.status = 'skip';
+    // Keep status as 'pending'
     roscoSkipped++;
     updateRoscoStats();
+
+    // Instead of drawing wheel skipping the dot color, pending dots remain default color.
+    // If we wanted them to look skipped but come back, we'd need a separate status like 'passed' 
+    // that operates exactly like 'pending'. But let's just keep it simple: pending.
     drawRoscoWheel();
 
     const pending = roscoWords.filter(w => w.status === 'pending');
@@ -537,7 +547,13 @@ function roscoPassaWord() {
         return;
     }
 
-    roscoCurrentIdx = (roscoCurrentIdx + 1) % roscoWords.length;
+    // Find next pending
+    let attempts = 0;
+    do {
+        roscoCurrentIdx = (roscoCurrentIdx + 1) % roscoWords.length;
+        attempts++;
+    } while (roscoWords[roscoCurrentIdx].status !== 'pending' && attempts < roscoWords.length);
+
     setTimeout(() => showCurrentRoscoQuestion(), 200);
 }
 
@@ -655,9 +671,8 @@ function drawRoscoWheel() {
         circle.setAttribute('fill',
             w.status === 'correct' ? '#10b981' :
                 w.status === 'wrong' ? '#ef4444' :
-                    w.status === 'skip' ? '#f59e0b' :
-                        isActive ? '#6366f1' :
-                            'rgba(30,41,59,0.85)'
+                    isActive ? '#6366f1' :
+                        'rgba(30,41,59,0.85)'
         );
         circle.setAttribute('stroke', isActive ? '#a5b4fc' : 'rgba(255,255,255,0.15)');
         circle.setAttribute('stroke-width', isActive ? '3' : '1.5');
@@ -754,7 +769,7 @@ function fetchWordsData() {
 // Progress Tracking
 // ════════════════════════════════════════════
 function loadLocalProgress() {
-    const saved = localStorage.getItem('pasapalabra_progress_' + (currentUser || 'guest'));
+    const saved = localStorage.getItem('pasalapabra_progress_' + (currentUser || 'guest'));
     if (saved) { userData = JSON.parse(saved); updateStatsUI(); }
 }
 
@@ -776,7 +791,7 @@ async function loadFirebaseProgress() {
 }
 
 async function saveProgress() {
-    localStorage.setItem('pasapalabra_progress_' + (currentUser || 'guest'), JSON.stringify(userData));
+    localStorage.setItem('pasalapabra_progress_' + (currentUser || 'guest'), JSON.stringify(userData));
     updateStatsUI();
     if (db && currentUser) {
         try {
@@ -936,14 +951,14 @@ async function promptLogin() {
         username = result.value || '';
     }
     currentUser = username.trim();
-    localStorage.setItem('pasapalabra_current_user', currentUser);
+    localStorage.setItem('pasalapabra_current_user', currentUser);
     updateUIForUser();
 }
 
 async function handleAuth() {
     if (currentUser) {
         currentUser = null;
-        localStorage.removeItem('pasapalabra_current_user');
+        localStorage.removeItem('pasalapabra_current_user');
         userData = { progress: {}, roscoBest: null };
         updateUIForUser();
         await promptLogin();
@@ -973,7 +988,7 @@ async function handleAuth() {
 
     if (username && username.trim() !== '') {
         currentUser = username.trim();
-        localStorage.setItem('pasapalabra_current_user', currentUser);
+        localStorage.setItem('pasalapabra_current_user', currentUser);
         updateUIForUser();
 
         if (currentUser === 'ADMIN') {
@@ -982,7 +997,7 @@ async function handleAuth() {
                 const result2 = await Swal.fire({ title: 'Iniciar Sesión', input: 'text', inputPlaceholder: 'Tu nombre...', confirmButtonText: 'Entrar', showCancelButton: true });
                 if (result2.value && result2.value.trim()) {
                     currentUser = result2.value.trim();
-                    localStorage.setItem('pasapalabra_current_user', currentUser);
+                    localStorage.setItem('pasalapabra_current_user', currentUser);
                     updateUIForUser();
                 } else return;
             } else {
